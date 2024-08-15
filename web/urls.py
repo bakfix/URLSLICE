@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import profile_view
+from .views import RegistrationView, LoginView
 
 urlpatterns = [
-    path('profile', profile_view, name="profile"),
+    path("register", RegistrationView.as_view(), name="register"),
+    path("login", LoginView.as_view(), name="login"),
+    # path("tokens", CreateShortLinkView.as_view(), name="shortlink")
 ]
