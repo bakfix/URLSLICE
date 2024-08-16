@@ -19,7 +19,7 @@ const Register = (props) => {
     const email = ev.target.email.value;
     const password = ev.target.password.value;
     const confirmpassword = ev.target.confirmpassword.value;
-    if (password !== confirmpassword) toast.error("Passwords do not match !");
+    if (password !== confirmpassword) toast.error("Не совпадают пароли !");
     else{
       const formData = {
         name: name,
