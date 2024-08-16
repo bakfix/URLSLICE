@@ -1,15 +1,9 @@
 from django.db import models
 
-
-class Token(models.Model):
-    id = models.AutoField(primary_key=True)
-    token = models.CharField(max_length=255)
-    created_at = models.DateTimeField()
-    expires_at = models.DateTimeField()
-    user_id = models.IntegerField()
-    is_used = models.BooleanField(default=False)
-
-
+'''
+Создана базовая модель пользователя, а 
+также модель для Url линка
+'''
 class User(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -19,3 +13,13 @@ class User(models.Model):
     def __str__(self) -> str:
         return self.name
 
+
+class Url(models.Model):
+    long_url = models.URLField(max_length=2048)
+    short_url = models.CharField(max_length=50, unique=True)
+    stat_click = models.IntegerField(default=0)
+    reg_url = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'[ {self.long_url[:40]} ] Создана [{self.reg_url} пользователем [{self.user}]'
