@@ -1,15 +1,17 @@
-
 from rest_framework import serializers
-from .models import User, Token
+from .models import User, Url
 
-
+'''
+Сериализаторы для общения бд с
+сервисом
+'''
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["name", "email", "password"]
 
 
-class TokenSerializer(serializers.ModelSerializer):
+class UrlSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Token
-        fields = ["token", "created_at", "expires_at", "user_id", "is_used"]
+        model = Url
+        fields = ['long_url', 'short_url', 'stat_click', 'reg_url', 'user']
