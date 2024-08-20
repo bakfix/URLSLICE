@@ -17,7 +17,7 @@ const Profile = (props) => {
   };
 
   const handleCreateShortUrl = () => {
-    navigate("/Shorturl");
+    navigate("/shorturl");
   };
 
   useEffect(() => {
