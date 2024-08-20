@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 const Home = () => {
   const navigate = useNavigate();
 
+  const handleCreateShortUrl = () => {
+    navigate("/shorturl");
+  };
   return (
     <section className="py-14">
       <div className="max-w-screen-xl mx-auto px-4 text-gray-600 md:px-8">
@@ -31,6 +34,11 @@ const Home = () => {
           >
             Вход
           </button>
+            <button
+              className="px-5 py-3 rounded-lg font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500"
+              onClick={handleCreateShortUrl}>
+              Создать короткую ссылку
+            </button>
         </div>
       </div>
     </section>
