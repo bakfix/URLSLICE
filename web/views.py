@@ -108,4 +108,6 @@ class CreateShortUrlView(APIView):
 class RedirectToLongUrl(APIView):
     def get(self, request, short_url):
         url = get_object_or_404(Url, short_url=short_url)
+        url.stat_click += 1
+        url.save()
         return redirect(url.long_url)
