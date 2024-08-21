@@ -6,27 +6,39 @@ import { useEffect } from "react";
 const URL = process.env.REACT_APP_BACKEND_URL + "/web/login";
 
 const Login = (props) => {
-  let navigate = useNavigate();
-  const { isLoggedIn, setIsLoggedIn, setName, setEmail } = props;
+    let navigate = useNavigate();
+    const { isLoggedIn, setIsLoggedIn, setName, setEmail } = props;
 
-  useEffect(() => {
-    if (isLoggedIn) navigate("profile");
-  });
+    useEffect(() => {
+        if (isLoggedIn) navigate("/profile");
+    }, [isLoggedIn, navigate]);
 
-  const handleLogin = async (ev) => {
-    ev.preventDefault();
-    const email = ev.target.email.value;
-    const password = ev.target.password.value;
-    const formData = { email: email, password: password };
-    const res = await axios.post(URL, formData);
-    const data = res.data;
-    if (data.success === true) {
-      toast.success(data.message);
-      setIsLoggedIn(true);
-      setEmail(email);
-      navigate("/profile");
-    } else toast.error(data.message);
-  };
+    const handleLogin = async (ev) => {
+        ev.preventDefault();
+        const email = ev.target.email.value;
+        const password = ev.target.password.value;
+        const formData = { email: email, password: password };
+        try {
+            const res = await axios.post(URL, formData);
+            const data = res.data;
+            if (data.success) {
+                toast.success(data.message);
+                setIsLoggedIn(true);
+                setEmail(email);
+
+                if (data.is_admin) {
+                    navigate("/admin");
+                } else {
+                    navigate("/profile");
+                }
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("An error occurred during login.");
+        }
+    };
 
   return (
     <div className="w-full flex justify-center my-4">
