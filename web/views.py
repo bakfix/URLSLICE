@@ -1,11 +1,15 @@
 import string
+
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.hashers import make_password, check_password
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User, Url
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UrlSerializer
 import random
 
 URL = "http://localhost:3000"
@@ -55,25 +59,25 @@ class LoginView(APIView):
             user = User.objects.get(email=email)
             if not check_password(password, user.password):
                 return Response(
-                    {"success": False, "message": "Введен не верный логин или пароль!"},
+                    {"success": False, "message": "Введен неверный логин или пароль!"},
                     status=status.HTTP_200_OK,
                 )
+
+            is_admin = user.is_superuser
+
             return Response(
-                {"success": True, "message": f"Вы вошли в аккаунт {email}!"},
+                {
+                    "success": True,
+                    "message": f"Вы вошли в аккаунт {email}!",
+                    "is_admin": is_admin
+                },
                 status=status.HTTP_200_OK,
             )
         except User.DoesNotExist:
             return Response(
-                {"success": False, "message": "Введен не верный логин или пароль!"},
+                {"success": False, "message": "Введен неверный логин или пароль!"},
                 status=status.HTTP_200_OK,
             )
-
-
-'''
-Создание короткой ссылки происходит с помощью
-библиотеки hashlib (256 хэширование). после сервер возвращает 
-проверка на ошибки
-'''
 
 
 class CreateShortUrlView(APIView):
@@ -111,3 +115,17 @@ class RedirectToLongUrl(APIView):
         url.stat_click += 1
         url.save()
         return redirect(url.long_url)
+
+
+class AdminPanelView(APIView):
+    def get(self, request):
+        users = User.objects.all().values('id', 'email')
+        return JsonResponse(list(users), safe=False)
+
+    def delete(self, request, user_id=None):
+        try:
+            user = User.objects.get(id=user_id)
+            user.delete()
+            return JsonResponse({'message': 'User deleted successfully'})
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
