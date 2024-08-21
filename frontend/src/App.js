@@ -10,6 +10,7 @@
     import Profile from "./pages/Profile";
     import { useState } from "react";
     import Shorturl from "./pages/Shorturl";
+    import Admin from "./pages/Admin";
 
     const App = () => {
       const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -72,8 +73,11 @@
 <Shorturl isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
                   }
                 />
-              </Routes>
+                                <Route path="admin" exact
+                  element={<Admin />}
 
+                />
+              </Routes>
             </div>
           </BrowserRouter>
         </div>
