@@ -5,12 +5,13 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User, Url
 from .serializers import UserSerializer, UrlSerializer
 import random
+from rest_framework_simplejwt.tokens import RefreshToken
 
 URL = "http://localhost:3000"
 
@@ -29,11 +30,16 @@ class RegistrationView(APIView):
 
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()
             return Response(
-                {"success": True, "message": "Вы зарегистрировались на DELTA Short Link!"},
-                status=status.HTTP_200_OK,
+                {
+                    "success": True,
+                    "message": "Вы зарегистрировались на DELTA Short Link!",
+                    "email": user.email
+                },
+                status=status.HTTP_201_CREATED,
             )
+
         else:
             error_msg = ""
             for key in serializer.errors:
@@ -65,11 +71,20 @@ class LoginView(APIView):
 
             is_admin = user.is_superuser
 
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            print("Request user:", request.user)
+
+            user_id = request.user.id
+            print("User ID:", user_id)
+
             return Response(
                 {
                     "success": True,
                     "message": f"Вы вошли в аккаунт {email}!",
-                    "is_admin": is_admin
+                    "is_admin": is_admin,
+                    "token": access_token,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -79,8 +94,8 @@ class LoginView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-
 class CreateShortUrlView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
             '''
@@ -90,6 +105,12 @@ class CreateShortUrlView(APIView):
             ссылка
             '''
             long_url = request.data.get('long_url')
+
+            print("Request user:", request.user)
+
+            user_id = request.user.id
+            print("User ID:", user_id)
+
             while True:
                 short_url_new = ''.join(random.choices(string.ascii_letters + string.digits, k=5)) # Создание короткой ссылки
                 if not Url.objects.filter(short_url=short_url_new).exists():
@@ -100,7 +121,7 @@ class CreateShortUrlView(APIView):
             '''
             url, created = Url.objects.update_or_create(
                 long_url=long_url,
-                defaults={'short_url': short_url}
+                defaults={'short_url': short_url, 'user': request.user}
             )
 
             return Response({'short_url': url.short_url}, status=status.HTTP_201_CREATED)
@@ -129,3 +150,12 @@ class AdminPanelView(APIView):
             return JsonResponse({'message': 'User deleted successfully'})
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
+
+class UserUrlsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user = request.user
+        urls = Url.objects.filter(user=user)
+        serializer = UrlSerializer(urls, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
