@@ -1,17 +1,17 @@
-
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 
 const URL = process.env.REACT_APP_BACKEND_URL + "/web/register";
+
 const Register = (props) => {
   const { isLoggedIn, setIsLoggedIn, setName, setEmail } = props;
   let navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) navigate("profile");
-  });
+    if (isLoggedIn) navigate("/profile");
+  }, [isLoggedIn, navigate]);
 
   const handleRegister = async (ev) => {
     ev.preventDefault();
@@ -19,27 +19,41 @@ const Register = (props) => {
     const email = ev.target.email.value;
     const password = ev.target.password.value;
     const confirmpassword = ev.target.confirmpassword.value;
-    if (password !== confirmpassword) toast.error("Не совпадают пароли !");
-    else{
+
+    if (password !== confirmpassword) {
+      toast.error("Не совпадают пароли!");
+    } else {
       const formData = {
         name: name,
         email: email,
         password: password,
       };
+
       try {
         const res = await axios.post(URL, formData);
         const data = res.data;
-        if (data.success === true) {
-          toast.success(data.message);
-          setIsLoggedIn(true);
-          setName(name);
-          setEmail(email);
-          navigate("/profile");
+
+        if (data.success) {
+          const loginResponse = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/web/login`, { email, password });
+          const token = loginResponse.data.token;
+
+          if (token) {
+            localStorage.setItem('token', token);
+            console.log('Saved token:', token);
+
+            setIsLoggedIn(true);
+            setName(name);
+            setEmail(email);
+            navigate('/profile');
+          } else {
+            toast.error("Ошибка входа после регистрации.");
+          }
         } else {
           toast.error(data.message);
         }
       } catch (err) {
-        console.log("Some error occured", err);
+        console.error("Ошибка при регистрации:", err);
+        toast.error("Произошла ошибка при регистрации.");
       }
     }
   };
@@ -52,8 +66,7 @@ const Register = (props) => {
             Создать аккаунт
           </h1>
           <form
-            className="space-y-4 md:space-y-"
-            action="POST"
+            className="space-y-4 md:space-y-6"
             onSubmit={handleRegister}
           >
             <div>
@@ -88,7 +101,7 @@ const Register = (props) => {
               />
             </div>
 
-            <div class="grid gap-6 mb-6 md:grid-cols-2">
+            <div className="grid gap-6 mb-6 md:grid-cols-2">
               <div>
                 <div className="mb-2 block">
                   <label
@@ -129,7 +142,7 @@ const Register = (props) => {
 
             <button
               type="submit"
-              class="w-full focus:outline-none text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-500 dark:hover:bg-purple-600 dark:focus:ring-purple-800"
+              className="w-full focus:outline-none text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-500 dark:hover:bg-purple-600 dark:focus:ring-purple-800"
             >
               Создать аккаунт
             </button>
