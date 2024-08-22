@@ -13,32 +13,38 @@ const Login = (props) => {
         if (isLoggedIn) navigate("/profile");
     }, [isLoggedIn, navigate]);
 
-    const handleLogin = async (ev) => {
-        ev.preventDefault();
-        const email = ev.target.email.value;
-        const password = ev.target.password.value;
-        const formData = { email: email, password: password };
-        try {
-            const res = await axios.post(URL, formData);
-            const data = res.data;
-            if (data.success) {
-                toast.success(data.message);
-                setIsLoggedIn(true);
-                setEmail(email);
+const handleLogin = async (ev) => {
+    ev.preventDefault();
+    const email = ev.target.email.value;
+    const password = ev.target.password.value;
+    const formData = { email: email, password: password };
+    try {
+        const res = await axios.post(URL, formData);
+        const data = res.data;
+        if (data.success) {
+            toast.success(data.message);
+            setIsLoggedIn(true);
+            setEmail(email);
 
-                if (data.is_admin) {
-                    navigate("/admin");
-                } else {
-                    navigate("/profile");
-                }
+            localStorage.setItem('token', data.token);
+
+            console.log("Сохраненный токен:", data.token);
+            console.log("Токен в локальном хранилище:", localStorage.getItem('token'));
+
+            if (data.is_admin) {
+                navigate("/admin");
             } else {
-                toast.error(data.message);
+                navigate("/profile");
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            toast.error("An error occurred during login.");
+        } else {
+            toast.error(data.message);
         }
-    };
+    } catch (error) {
+        console.error("Login error:", error);
+        toast.error("An error occurred during login.");
+    }
+};
+
 
   return (
     <div className="w-full flex justify-center my-4">
