@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegistrationView, LoginView, CreateShortUrlView, RedirectToLongUrl, AdminPanelView
+from .views import RegistrationView, LoginView, CreateShortUrlView, RedirectToLongUrl, AdminPanelView, UserUrlsView
 
 urlpatterns = [
     path("register", RegistrationView.as_view(), name="register"),
@@ -8,4 +8,5 @@ urlpatterns = [
     path("<str:short_url>", RedirectToLongUrl.as_view(), name="redirect_to_long_url"),
     path('admin/users/', AdminPanelView.as_view(), name='admin_users'),
     path('admin/users/<int:user_id>/', AdminPanelView.as_view(), name='delete_user'),
+    path("user/urls/", UserUrlsView.as_view(), name="user_urls"),
 ]
